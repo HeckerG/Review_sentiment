@@ -8,10 +8,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, mean_squared_error
 
 # Load the dataset
-data = pd.read_csv('amazon_baby.csv')
+data = pd.read_csv('IMDB Dataset.csv')
 
 # Preprocess the data
-data['label'] = data['rating'].apply(lambda x: 'positive' if x > 3 else 'negative' if x < 3 else 'neutral')
+data['label'] = data['sentiment']
 data = data[['review', 'label']]
 
 # Handle NaN values in the 'review' column
@@ -69,13 +69,13 @@ plt.ylabel('Count')
 plt.title('Distribution of Predicted Ratings')
 plt.show()
 
-# Distribution of True Ratings Plot
+# Distribution of True Labels Plot
 plt.figure(figsize=(8, 6))
-plt.hist(data['rating'], bins=5, edgecolor='black', alpha=0.7)
-plt.xticks(np.arange(1, 6))
-plt.xlabel('Rating')
+label_counts = data['label'].value_counts()
+plt.bar(label_counts.index, label_counts.values, edgecolor='black', alpha=0.7)
+plt.xlabel('Sentiment')
 plt.ylabel('Count')
-plt.title('Distribution of True Ratings')
+plt.title('Distribution of True Labels')
 plt.show()
 
 # Ratio of Training and Test Data Plot

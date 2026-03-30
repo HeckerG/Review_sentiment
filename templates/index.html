@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis - Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+        
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .title {
+            color: white;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .theme-toggle {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 800px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        body.dark-mode .card {
+            background: #0f3460;
+            color: #eee;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+            font-size: 24px;
+        }
+        
+        body.dark-mode .card h2 {
+            color: #64b5f6;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        body.dark-mode label {
+            color: #aaa;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 140px;
+            transition: all 0.3s;
+        }
+        
+        body.dark-mode textarea {
+            background: #1a2a3a;
+            border-color: #444;
+            color: #eee;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .char-count {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        body.dark-mode .char-count {
+            color: #666;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            font-size: 13px;
+        }
+        
+        body.dark-mode .btn-secondary {
+            background: #1a2a3a;
+            color: #aaa;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        body.dark-mode .btn-secondary:hover {
+            background: #2a3a4a;
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .samples {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .sample-btn {
+            padding: 10px;
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: left;
+            transition: all 0.3s;
+            color: #333;
+        }
+        
+        body.dark-mode .sample-btn {
+            background: #1a2a3a;
+            border-color: #444;
+            color: #ccc;
+        }
+        
+        .sample-btn:hover {
+            background: #e8f0fe;
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        body.dark-mode .sample-btn:hover {
+            background: #2a3a4a;
+            border-color: #64b5f6;
+            color: #64b5f6;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result.positive {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        
+        .result.negative {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .result-label {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            transition: width 0.5s ease-out;
+        }
+        
+        .confidence-text {
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        
+        .copy-btn {
+            background: rgba(0,0,0,0.1);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(0,0,0,0.2);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        body.dark-mode .spinner {
+            border: 3px solid rgba(100, 181, 246, 0.2);
+            border-top: 3px solid #64b5f6;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        body.dark-mode .error {
+            background: #5a2a2a;
+            color: #ff9a9a;
+        }
+        
+        .history-title {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        body.dark-mode .history-title {
+            color: #64b5f6;
+        }
+        
+        .history-item {
+            padding: 12px;
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        body.dark-mode .history-item {
+            background: #1a2a3a;
+            color: #ccc;
+        }
+        
+        .history-item:hover {
+            background: #e8f0fe;
+            transform: translateX(5px);
+        }
+        
+        body.dark-mode .history-item:hover {
+            background: #2a3a4a;
+        }
+        
+        .history-item.positive {
+            border-left-color: #28a745;
+        }
+        
+        .history-item.negative {
+            border-left-color: #dc3545;
+        }
+        
+        .history-text {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        body.dark-mode .history-text {
+            color: #999;
+        }
+        
+        .clear-history {
+            margin-top: 10px;
+            padding: 8px;
+            font-size: 12px;
+            width: 100%;
+        }
+        
+        .footer {
+            margin-top: 60px;
+            padding: 30px 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .footer-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .footer-text {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+        
+        .footer-credits {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 8px;
+        }
+        
+        .footer-credits a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .footer-credits a:hover {
+            border-bottom: 2px solid rgba(255, 255, 255, 0.9);
+        }
+        
+        body.dark-mode .footer {
+            border-top-color: rgba(100, 181, 246, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">🎯 Sentiment Analyzer</div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+    </div>
+    
+    <div class="container">
+        <div class="card">
+            <h2>📝 Analyze</h2>
+            
+            <form id="reviewForm">
+                <div class="form-group">
+                    <label for="review">Enter your review:</label>
+                    <textarea id="review" placeholder="What do you think? Share your honest opinion..." required></textarea>
+                    <div class="char-count"><span id="charCount">0</span>/500 characters</div>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">Analyze</button>
+                    <button type="button" class="btn-secondary" onclick="clearReview()">Clear</button>
+                </div>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #667eea;">Analyzing sentiment...</p>
+            </div>
+            
+            <div class="error" id="error"></div>
+            
+            <div class="result" id="result">
+                <div class="result-label" id="sentimentText"></div>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                </div>
+                <div class="confidence-text">Confidence: <span id="confidencePercent">0</span>%</div>
+                <button class="copy-btn" onclick="copyResult()">📋 Copy Result</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🎬 Try Samples</h2>
+            <p style="font-size: 13px; color: #999; margin-bottom: 15px;">Click any sample to test the model:</p>
+            
+            <div class="samples">
+                <button class="sample-btn" onclick="useSample('This product is absolutely amazing! Best purchase ever. Highly recommend to everyone!')">
+                    ✅ Positive: "This product is absolutely amazing!"
+                </button>
+                <button class="sample-btn" onclick="useSample('Worst experience ever. Complete waste of money. Do not buy this!')">
+                    ❌ Negative: "Worst experience ever."
+                </button>
+                <button class="sample-btn" onclick="useSample('The movie was captivating from start to finish. Outstanding performances by all actors.')">
+                    ✅ Positive: "Outstanding performances..."
+                </button>
+                <button class="sample-btn" onclick="useSample('Terrible quality and terrible service. Very disappointed with everything.')">
+                    ❌ Negative: "Terrible quality..."
+                </button>
+                <button class="sample-btn" onclick="useSample('Love it so much! Exceeded my expectations in every way. This is perfection!')">
+                    ✅ Positive: "Love it so much!"
+                </button>
+                <button class="sample-btn" onclick="useSample('Absolutely dreadful. Cannot believe how bad this is. Returning immediately.')">
+                    ❌ Negative: "Absolutely dreadful."
+                </button>
+            </div>
+            
+            <div class="history-title">📊 History</div>
+            <div id="history" style="max-height: 300px; overflow-y: auto;"></div>
+            <button class="clear-history btn-secondary" onclick="clearHistory()">Clear History</button>
+        </div>
+    </div>
+    
+    <script>
+        let analysisHistory = JSON.parse(localStorage.getItem('sentimentHistory')) || [];
+        
+        function updateCharCount() {
+            const count = document.getElementById('review').value.length;
+            document.getElementById('charCount').textContent = Math.min(count, 500);
+        }
+        
+        function clearReview() {
+            document.getElementById('review').value = '';
+            updateCharCount();
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function useSample(text) {
+            document.getElementById('review').value = text;
+            updateCharCount();
+            document.getElementById('reviewForm').dispatchEvent(new Event('submit'));
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            document.querySelector('.theme-toggle').textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+        
+        function copyResult() {
+            const sentiment = document.getElementById('sentimentText').textContent;
+            const confidence = document.getElementById('confidencePercent').textContent;
+            const text = `Sentiment: ${sentiment} (${confidence}% confidence)`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            });
+        }
+        
+        function updateHistory() {
+            const historyDiv = document.getElementById('history');
+            if (analysisHistory.length === 0) {
+                historyDiv.innerHTML = '<p style="color: #999; font-size: 13px;">No analyses yet. Try some reviews!</p>';
+                return;
+            }
+            
+            historyDiv.innerHTML = analysisHistory.reverse().slice(0, 10).map(item => `
+                <div class="history-item ${item.sentiment.toLowerCase()}" onclick="useSample('${item.review.replace(/'/g, "\\'")}')">
+                    <strong>${item.sentiment}</strong> - ${item.confidence}% confidence
+                    <div class="history-text">"${item.review.substring(0, 60)}..."</div>
+                </div>
+            `).join('');
+        }
+        
+        function clearHistory() {
+            if (confirm('Clear all history?')) {
+                analysisHistory = [];
+                localStorage.setItem('sentimentHistory', JSON.stringify(analysisHistory));
+                updateHistory();
+            }
+        }
+        
+        document.getElementById('review').addEventListener('input', updateCharCount);
+        
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const review = document.getElementById('review').value;
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const error = document.getElementById('error');
+            const button = document.querySelector('.btn-primary');
+            
+            result.style.display = 'none';
+            error.style.display = 'none';
+            loading.style.display = 'block';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ review: review })
+                });
+                
+                const data = await response.json();
+                loading.style.display = 'none';
+                
+                if (response.ok) {
+                    const sentiment = data.sentiment;
+                    const confidence = data.confidence;
+                    
+                    result.className = `result ${sentiment.toLowerCase()}`;
+                    document.getElementById('sentimentText').textContent = sentiment.toUpperCase() + ' 🎉';
+                    document.getElementById('confidencePercent').textContent = confidence;
+                    document.getElementById('confidenceFill').style.width = confidence + '%';
+                    result.style.display = 'block';
+                    
+                    // Add to history
+                    analysisHistory.push({
+                        review: review,
+                        sentiment: sentiment,
+                        confidence: confidence,
+                        timestamp: new Date().toLocaleTimeString()
+                    });
+                    localStorage.setItem('sentimentHistory', JSON.stringify(analysisHistory));
+                    updateHistory();
+                } else {
+                    error.textContent = data.error || 'An error occurred';
+                    error.style.display = 'block';
+                }
+            } catch (err) {
+                loading.style.display = 'none';
+                error.textContent = '❌ Error: Cannot connect to server. Make sure the app is running on http://127.0.0.1:5000';
+                error.style.display = 'block';
+            }
+            
+            button.disabled = false;
+        });
+        
+        // Load theme preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+        
+        // Initialize
+        updateHistory();
+    </script>
+    
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-icon">✨ AI | 🎨 UI</div>
+            <div class="footer-text">Designed & Built by</div>
+            <div class="footer-credits">
+                <strong>Krish Gulati</strong>
+                <br>
+                <span style="font-size: 12px; opacity: 0.8;">Sentiment Analysis • IMDB Dataset • Machine Learning</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
